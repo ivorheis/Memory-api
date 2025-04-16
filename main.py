@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException
+@app.get("/")
+def root():
+    return {"message": "Memory API is alive!"}
 from pydantic import BaseModel
 import json
 import uuid
