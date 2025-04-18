@@ -10,6 +10,8 @@ import os
 
 # Load env variable for DB URL
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set. Please set it in your .env file.")
 
 # Set up SQLAlchemy
 engine = create_engine(DATABASE_URL)
@@ -21,9 +23,8 @@ class MemoryDB(Base):
     __tablename__ = "memories"
     id = Column(Integer, primary_key=True, index=True)
     text = Column(String, nullable=False)
-    tags = Column(String)  # Comma-separated like "#Work,#Health"
+    tags = Column(String, default="")  # Comma-separated like "#Work,#Health"
     created_at = Column(DateTime, default=datetime.utcnow)
-
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -66,7 +67,6 @@ def add_memory(memory: MemoryCreate, db: Session = Depends(get_db)):
     db.refresh(db_memory)
     return db_memory
 
-
 @app.get("/memories", response_model=list[MemoryResponse])
 def get_memories(tag: str = None, db: Session = Depends(get_db)):
     query = db.query(MemoryDB)
@@ -81,6 +81,7 @@ def update_memory(memory_id: int, updated_memory: MemoryCreate, db: Session = De
         raise HTTPException(status_code=404, detail="Memory not found.")
 
     memory.text = updated_memory.text
+    memory.tags = updated_memory.tags
     db.commit()
     db.refresh(memory)
     return memory
