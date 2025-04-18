@@ -74,3 +74,13 @@ def update_memory(memory_id: int, updated_memory: MemoryCreate, db: Session = De
     db.commit()
     db.refresh(memory)
     return memory
+    
+@app.delete("/memories/{memory_id}")
+def delete_memory(memory_id: int, db: Session = Depends(get_db)):
+    memory = db.query(MemoryDB).filter(MemoryDB.id == memory_id).first()
+    if memory is None:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+
+    db.delete(memory)
+    db.commit()
+    return {"message": f"Memory {memory_id} deleted."}
