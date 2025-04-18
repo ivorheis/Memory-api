@@ -21,7 +21,9 @@ class MemoryDB(Base):
     __tablename__ = "memories"
     id = Column(Integer, primary_key=True, index=True)
     text = Column(String, nullable=False)
+    tags = Column(String)  # Comma-separated like "#Work,#Health"
     created_at = Column(DateTime, default=datetime.utcnow)
+
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -32,10 +34,12 @@ app = FastAPI()
 # Pydantic schemas
 class MemoryCreate(BaseModel):
     text: str
+    tags: str = ""  # Default empty string if none
 
 class MemoryResponse(BaseModel):
     id: int
     text: str
+    tags: str
     created_at: datetime
 
     class Config:
@@ -56,15 +60,19 @@ def root():
 
 @app.post("/memories", response_model=MemoryResponse)
 def add_memory(memory: MemoryCreate, db: Session = Depends(get_db)):
-    db_memory = MemoryDB(text=memory.text)
+    db_memory = MemoryDB(text=memory.text, tags=memory.tags)
     db.add(db_memory)
     db.commit()
     db.refresh(db_memory)
     return db_memory
 
+
 @app.get("/memories", response_model=list[MemoryResponse])
-def get_memories(db: Session = Depends(get_db)):
-    return db.query(MemoryDB).order_by(MemoryDB.created_at.desc()).all()
+def get_memories(tag: str = None, db: Session = Depends(get_db)):
+    query = db.query(MemoryDB)
+    if tag:
+        query = query.filter(MemoryDB.tags.ilike(f"%{tag}%"))
+    return query.order_by(MemoryDB.created_at.desc()).all()
 
 @app.put("/memories/{memory_id}", response_model=MemoryResponse)
 def update_memory(memory_id: int, updated_memory: MemoryCreate, db: Session = Depends(get_db)):
