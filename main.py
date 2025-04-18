@@ -29,7 +29,16 @@ class MemoryDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # Define API app
-app = FastAPI()
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Memory API",
+    "description": "An API for storing and retrieving memory entries",
+    "version": "0.1.0",
+    "name": "memory-plugin"
+  },
+}
+
 
 # Pydantic schemas
 class MemoryCreate(BaseModel):
