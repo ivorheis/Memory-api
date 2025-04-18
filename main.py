@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import os
 
-# Get DB URL from environment variable
+# Load env variable for DB URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Set up SQLAlchemy
@@ -27,7 +27,7 @@ Base.metadata.create_all(bind=engine)
 # Define API app
 app = FastAPI()
 
-# Pydantic schema
+# Pydantic schemas
 class MemoryCreate(BaseModel):
     text: str
 
@@ -63,3 +63,14 @@ def add_memory(memory: MemoryCreate, db: Session = Depends(get_db)):
 @app.get("/memories", response_model=list[MemoryResponse])
 def get_memories(db: Session = Depends(get_db)):
     return db.query(MemoryDB).order_by(MemoryDB.created_at.desc()).all()
+
+@app.put("/memories/{memory_id}", response_model=MemoryResponse)
+def update_memory(memory_id: int, updated_memory: MemoryCreate, db: Session = Depends(get_db)):
+    memory = db.query(MemoryDB).filter(MemoryDB.id == memory_id).first()
+    if memory is None:
+        raise HTTPException(status_code=404, detail="Memory not found.")
+
+    memory.text = updated_memory.text
+    db.commit()
+    db.refresh(memory)
+    return memory
