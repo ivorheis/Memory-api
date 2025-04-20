@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Memory API Plugin",
+  "name_for_model": "memory_plugin",
+  "description_for_human": "Plugin to store and retrieve memories from the Memory API.",
+  "description_for_model": "This plugin allows the user to store and retrieve memories from a memory database. It can create, read, update, and delete memories.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://memory-api-34a3.onrender.com/openapi.json"
+  },
+  "logo_url": "https://memory-api-34a3.onrender.com/logo.png",
+  "contact_email": "your-email@example.com",
+  "legal_info_url": "https://memory-api-34a3.onrender.com/legal"
+}
