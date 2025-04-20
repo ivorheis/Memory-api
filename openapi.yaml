@@ -1,0 +1,117 @@
+openapi: 3.0.1
+info:
+  title: Memory API
+  description: API for storing and retrieving memories
+  version: 1.0.0
+servers:
+  - url: https://memory-api-34a3.onrender.com
+paths:
+  /memories:
+    get:
+      operationId: getMemories
+      summary: Get all memories
+      responses:
+        '200':
+          description: Successful retrieval of memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Memory'
+    post:
+      operationId: createMemory
+      summary: Store a new memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryInput'
+      responses:
+        '201':
+          description: Memory created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Memory'
+  /memories/{id}:
+    get:
+      operationId: getMemoryById
+      summary: Get a specific memory by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of memory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Memory'
+    put:
+      operationId: updateMemory
+      summary: Update a memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryInput'
+      responses:
+        '200':
+          description: Memory updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Memory'
+    delete:
+      operationId: deleteMemory
+      summary: Delete a memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Memory deleted successfully
+components:
+  schemas:
+    Memory:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+      required:
+        - id
+        - content
+    MemoryInput:
+      type: object
+      properties:
+        content:
+          type: string
+        metadata:
+          type: object
+      required:
+        - content
