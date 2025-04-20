@@ -1,10 +1,14 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from pydantic import BaseModel
 from datetime import datetime
+import yaml
+import json
 import os
 
 # Load env variable for DB URL
@@ -33,7 +37,13 @@ app = FastAPI(
     title="Memory API",
     description="An API for storing and retrieving memory entries"
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Pydantic schemas
 class MemoryCreate(BaseModel):
     text: str
@@ -109,3 +119,26 @@ def delete_memory(memory_id: int, db: Session = Depends(get_db)) -> dict:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     return {"message": f"Memory {memory_id} deleted."}
+
+@app.get('/openapi.json', response_class=JSONResponse)
+def openapi_spec():
+    with open('openapi.yaml', 'r') as file:
+        return yaml.safe_load(file)
+@app.get('/typingmind-plugin.json', response_class=JSONResponse)
+def plugin_manifest():
+    with open('typingmind-plugin.json', 'r') as file:
+        return json.load(file)
+@app.get('/logo.png')
+def logo():
+    return FileResponse('static/logo.png', media_type='image/png')
+@app.get('/legal', response_class=HTMLResponse)
+def legal():
+    return """
+    <html>
+        <head><title>Legal Information</title></head>
+        <body>
+            <h1>Legal Information</h1>
+            <p>This is a basic legal information page for the Memory API.</p>
+        </body>
+    </html>
+    """
